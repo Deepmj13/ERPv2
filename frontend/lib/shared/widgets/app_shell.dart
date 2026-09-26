@@ -69,6 +69,11 @@ class _AppShellState extends State<AppShell> {
                       label: Text('Payments'),
                     ),
                     NavigationRailDestination(
+                      icon: Icon(Icons.account_balance_wallet_outlined),
+                      selectedIcon: Icon(Icons.account_balance_wallet),
+                      label: Text('Expenses'),
+                    ),
+                    NavigationRailDestination(
                       icon: Icon(Icons.group_outlined),
                       selectedIcon: Icon(Icons.group),
                       label: Text('Users'),

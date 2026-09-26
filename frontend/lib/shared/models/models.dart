@@ -214,8 +214,7 @@ class DocNumber {
   factory DocNumber.fromJson(Map<String, dynamic> json) => DocNumber(
         number: json['number'] as String,
         status: json['status'] as String? ?? '',
-        total: json['']?.toString() ??
-            json['']?.toString(),
+        total: json['totalAmount']?.toString() ?? json['total']?.toString(),
       );
 }
 
@@ -241,12 +240,14 @@ class Quotation extends DocNumber {
       id: json['id'] as String,
       number: json['number'] as String,
       status: json['status'] as String? ?? '',
-      total: json['']?.toString(),
+      total: json['totalAmount']?.toString() ?? json['total']?.toString(),
       customerId: json['customerId'] as String?,
       customerName: customer is Map<String, dynamic>
           ? customer['name'] as String?
           : null,
-      itemCount: (json['items'] as List?)?.length ?? json['itemCount'] as int?,
+      itemCount: json['_count']?['items'] as int? ??
+          (json['items'] as List?)?.length ??
+          json['itemCount'] as int?,
     );
   }
 }
@@ -269,7 +270,8 @@ class SalesOrder extends DocNumber {
       id: json['id'] as String,
       number: json['number'] as String,
       status: json['status'] as String? ?? '',
-      total: json['']?.toString(),
+      total:
+          json['totalAmount']?.toString() ?? json['total']?.toString(),
       customerName: customer is Map<String, dynamic>
           ? customer['name'] as String?
           : null,
@@ -299,11 +301,12 @@ class Invoice extends DocNumber {
       id: json['id'] as String,
       number: json['number'] as String,
       status: json['status'] as String? ?? '',
-      total: json['']?.toString(),
+      total:
+          json['totalAmount']?.toString() ?? json['total']?.toString(),
       customerName: customer is Map<String, dynamic>
           ? customer['name'] as String?
           : null,
-      outstanding: json['']?.toString(),
+      outstanding: json['outstanding']?.toString(),
       paidAt: json['paidAt'] as String?,
     );
   }
@@ -333,7 +336,7 @@ class Payment {
     return Payment(
       id: json['id'] as String,
       number: json['number'] as String,
-      amount: json['']?.toString() ?? '0',
+      amount: json['amount']?.toString() ?? '0',
       method: json['method'] as String? ?? '',
       status: json['status'] as String?,
       invoiceNumber: invoice is Map<String, dynamic>
@@ -399,16 +402,52 @@ class DashboardSummary {
   final String? salesThisMonth;
   final String? receiptsThisMonth;
 
-  factory DashboardSummary.fromJson(Map<String, dynamic> json) =>
-      DashboardSummary(
-        totalCustomers: json['totalCustomers'] as num?,
-        totalProducts: json['totalProducts'] as num?,
-        totalInvoices: json['totalInvoices'] as num?,
-        totalRevenue: json['']?.toString(),
-        dueAmount: json['']?.toString(),
-        openQuotations: json['openQuotations'] as num?,
-        lowStock: json['lowStockCount'] as num? ?? json['lowStock'] as num?,
-        salesThisMonth: json['']?.toString(),
-        receiptsThisMonth: json['']?.toString(),
-      );
+  factory DashboardSummary.fromJson(Map<String, dynamic> json) {
+    final outstanding = json['outstandingInvoices'];
+    return DashboardSummary(
+      totalCustomers: json['totalCustomers'] as num?,
+      totalProducts: json['totalProducts'] as num?,
+      totalInvoices: json['totalInvoices'] as num?,
+      totalRevenue: json['paymentsThisMonth']?.toString(),
+      dueAmount: outstanding is Map<String, dynamic>
+          ? outstanding['total']?.toString()
+          : null,
+      openQuotations: json['openQuotations'] as num?,
+      lowStock: json['lowStockCount'] as num? ?? json['lowStock'] as num?,
+      salesThisMonth: json['salesThisMonth']?.toString(),
+      receiptsThisMonth: json['paymentsThisMonth']?.toString(),
+    );
+  }
+}
+
+class Expense {
+  const Expense({
+    required this.id,
+    required this.amount,
+    this.category,
+    this.description,
+    this.expenseDate,
+    this.createdBy,
+  });
+
+  final String id;
+  final String amount;
+  final String? category;
+  final String? description;
+  final String? expenseDate;
+  final String? createdBy;
+
+  factory Expense.fromJson(Map<String, dynamic> json) {
+    final createdBy = json['createdBy'];
+    return Expense(
+      id: json['id'] as String,
+      amount: json['amount']?.toString() ?? '0',
+      category: json['category'] as String?,
+      description: json['description'] as String?,
+      expenseDate: json['expenseDate'] as String?,
+      createdBy: createdBy is Map<String, dynamic>
+          ? createdBy['name'] as String?
+          : null,
+    );
+  }
 }

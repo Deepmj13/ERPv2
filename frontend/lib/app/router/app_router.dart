@@ -7,6 +7,7 @@ import '../../features/audit/audit_screen.dart';
 import '../../features/customers/customers_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/inventory/inventory_screen.dart';
+import '../../features/expenses/expenses_screen.dart';
 import '../../features/payments/payments_screen.dart';
 import '../../features/products/products_screen.dart';
 import '../../features/sales/invoice_detail_screen.dart';
@@ -102,6 +103,14 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/payments',
                 builder: (context, state) => const PaymentsScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/expenses',
+                builder: (context, state) => const ExpensesScreen(),
               ),
             ],
           ),
