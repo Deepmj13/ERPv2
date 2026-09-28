@@ -6,11 +6,11 @@ import '../../shared/formatters/formatters.dart';
 import '../../shared/widgets/common.dart';
 import '../../shared/widgets/sale_composer.dart' show SaleComposer, SaleKind;
 
-final _invoiceProvider =
-    FutureProvider.autoDispose.family<Map<String, dynamic>, String>((ref, id) async {
-  final api = ref.watch(apiClientProvider);
-  return Map<String, dynamic>.from(await api.get('/invoices/$id') as Map);
-});
+final _invoiceProvider = FutureProvider.autoDispose
+    .family<Map<String, dynamic>, String>((ref, id) async {
+      final api = ref.watch(apiClientProvider);
+      return Map<String, dynamic>.from(await api.get('/invoices/$id') as Map);
+    });
 
 class InvoiceDetailScreen extends ConsumerWidget {
   const InvoiceDetailScreen({super.key, required this.id});
@@ -21,10 +21,7 @@ class InvoiceDetailScreen extends ConsumerWidget {
     final api = ref.read(apiClientProvider);
     final async = ref.watch(_invoiceProvider(id));
 
-    Future<void> action(
-      Future<dynamic> Function() call,
-      String success,
-    ) async {
+    Future<void> action(Future<dynamic> Function() call, String success) async {
       try {
         await call();
         if (context.mounted) {
@@ -51,7 +48,10 @@ class InvoiceDetailScreen extends ConsumerWidget {
         data: (inv) {
           final status = inv['status'] as String? ?? '';
           final canPost = status == 'DRAFT';
-          final canCancel = status == 'DRAFT' || status == 'OPEN' || status == 'PARTIALLY_PAID';
+          final canCancel =
+              status == 'DRAFT' ||
+              status == 'OPEN' ||
+              status == 'PARTIALLY_PAID';
           final canPay = status == 'OPEN' || status == 'PARTIALLY_PAID';
 
           final items = (inv['items'] as List? ?? [])
@@ -74,9 +74,7 @@ class InvoiceDetailScreen extends ConsumerWidget {
                           Expanded(
                             child: Text(
                               inv['number'] as String? ?? '',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headlineSmall
+                              style: Theme.of(context).textTheme.headlineSmall
                                   ?.copyWith(fontWeight: FontWeight.w700),
                             ),
                           ),
@@ -107,9 +105,7 @@ class InvoiceDetailScreen extends ConsumerWidget {
                         ),
                         subtitle: Text(
                           '${item['quantity']} × ${money(item['unitPrice'])}'
-                          '${(num.tryParse(item['taxRate']?.toString() ?? '0') ?? 0) > 0
-                              ? '   tax ${item['taxRate']}%'
-                              : ''}',
+                          '${(num.tryParse(item['taxRate']?.toString() ?? '0') ?? 0) > 0 ? '   tax ${item['taxRate']}%' : ''}',
                         ),
                         trailing: Text(money(item['lineTotal'])),
                       ),
@@ -119,17 +115,20 @@ class InvoiceDetailScreen extends ConsumerWidget {
                       child: Column(
                         children: [
                           _SumRow(label: 'Subtotal', value: inv['subtotal']),
+                          _SumRow(label: 'Tax', value: inv['taxTotal']),
                           _SumRow(
-                              label: 'Tax', value: inv['taxTotal']),
-                          _SumRow(label: 'Total', value: inv['totalAmount'], bold: true),
+                            label: 'Total',
+                            value: inv['totalAmount'],
+                            bold: true,
+                          ),
                           const Divider(height: 16),
+                          _SumRow(label: 'Paid', value: inv['amountPaid']),
                           _SumRow(
-                              label: 'Paid', value: inv['amountPaid']),
-                          _SumRow(
-                              label: 'Outstanding',
-                              value: inv['outstanding'],
-                              bold: true,
-                              color: Theme.of(context).colorScheme.error),
+                            label: 'Outstanding',
+                            value: inv['outstanding'],
+                            bold: true,
+                            color: Theme.of(context).colorScheme.error,
+                          ),
                         ],
                       ),
                     ),
@@ -169,8 +168,7 @@ class InvoiceDetailScreen extends ConsumerWidget {
                     if (canCancel)
                       OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
-                          foregroundColor:
-                              Theme.of(context).colorScheme.error,
+                          foregroundColor: Theme.of(context).colorScheme.error,
                         ),
                         onPressed: () async {
                           final ok = await confirmDialog(
@@ -211,8 +209,7 @@ class InvoiceDetailScreen extends ConsumerWidget {
                   kind: SaleKind.invoice,
                   onCreated: (created) {
                     ref.invalidate(_invoiceProvider(id));
-                    showMessage(
-                        context, '${created['number']} created');
+                    showMessage(context, '${created['number']} created');
                   },
                 ),
               ),
@@ -241,13 +238,11 @@ class _SumRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = (bold
-            ? Theme.of(context).textTheme.titleMedium
-            : Theme.of(context).textTheme.bodyMedium)
-        ?.copyWith(
-          fontWeight: bold ? FontWeight.w700 : null,
-          color: color,
-        );
+    final style =
+        (bold
+                ? Theme.of(context).textTheme.titleMedium
+                : Theme.of(context).textTheme.bodyMedium)
+            ?.copyWith(fontWeight: bold ? FontWeight.w700 : null, color: color);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
@@ -273,7 +268,8 @@ class _PaymentDialog extends ConsumerStatefulWidget {
 class _PaymentDialogState extends ConsumerState<_PaymentDialog> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _amount = TextEditingController(
-      text: (widget.invoice['outstanding'] ?? 0).toString());
+    text: (widget.invoice['outstanding'] ?? 0).toString(),
+  );
   String? _method = 'BANK_TRANSFER';
   bool _submitting = false;
 
@@ -297,11 +293,14 @@ class _PaymentDialogState extends ConsumerState<_PaymentDialog> {
     try {
       await ref
           .read(apiClientProvider)
-          .post('/payments', body: {
-            'invoiceId': widget.invoice['id'],
-            'amount': double.tryParse(_amount.text) ?? 0,
-            'method': _method,
-          });
+          .post(
+            '/payments',
+            body: {
+              'invoiceId': widget.invoice['id'],
+              'amount': double.tryParse(_amount.text) ?? 0,
+              'method': _method,
+            },
+          );
       if (mounted) {
         showMessage(context, 'Payment recorded');
         widget.onDone();
@@ -342,8 +341,9 @@ class _PaymentDialogState extends ConsumerState<_PaymentDialog> {
             TextFormField(
               controller: _amount,
               autofocus: true,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               decoration: const InputDecoration(labelText: 'Amount *'),
               validator: (v) {
                 final n = num.tryParse(v ?? '');

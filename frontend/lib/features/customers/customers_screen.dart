@@ -5,22 +5,24 @@ import '../../shared/models/models.dart';
 import '../../shared/state/string_notifier.dart';
 import '../../shared/widgets/common.dart';
 
-final _customersProvider =
-    FutureProvider.autoDispose<PageResult<Customer>>((ref) async {
+final _customersProvider = FutureProvider.autoDispose<PageResult<Customer>>((
+  ref,
+) async {
   final api = ref.watch(apiClientProvider);
   final search = ref.watch(_searchProvider);
-  final res = await api.get('/customers', query: {
-    'search': search.isEmpty ? null : search,
-    'limit': 200,
-  });
+  final res = await api.get(
+    '/customers',
+    query: {'search': search.isEmpty ? null : search, 'limit': 200},
+  );
   return PageResult.fromJsonList(
     Map<String, dynamic>.from(res as Map),
     Customer.fromJson,
   );
 });
 
-final _searchProvider =
-    NotifierProvider<StringNotifier, String>(StringNotifier.new);
+final _searchProvider = NotifierProvider<StringNotifier, String>(
+  StringNotifier.new,
+);
 
 class CustomersScreen extends ConsumerStatefulWidget {
   const CustomersScreen({super.key});
@@ -113,20 +115,25 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
                     rows: [
                       for (final c in customers)
                         DataRow(
-                          onSelectChanged: (_) => _openForm(
-                            _toMap(c),
-                          ),
+                          onSelectChanged: (_) => _openForm(_toMap(c)),
                           cells: [
-                            DataCell(Text(c.name,
+                            DataCell(
+                              Text(
+                                c.name,
                                 style: const TextStyle(
-                                    fontWeight: FontWeight.w600))),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
                             DataCell(Text(c.email ?? '-')),
                             DataCell(Text(c.phone ?? '-')),
                             DataCell(Text(c.address ?? '-')),
-                            DataCell(IconButton(
-                              icon: const Icon(Icons.more_vert),
-                              onPressed: () => _openForm(_toMap(c)),
-                            )),
+                            DataCell(
+                              IconButton(
+                                icon: const Icon(Icons.more_vert),
+                                onPressed: () => _openForm(_toMap(c)),
+                              ),
+                            ),
                           ],
                         ),
                     ],
@@ -141,9 +148,11 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
                       leading: const CircleAvatar(child: Icon(Icons.person)),
                       title: Text(c.name),
                       subtitle: Text(
-                        [c.email, c.phone, c.address]
-                            .where((v) => v != null && v.isNotEmpty)
-                            .join(' · '),
+                        [
+                          c.email,
+                          c.phone,
+                          c.address,
+                        ].where((v) => v != null && v.isNotEmpty).join(' · '),
                       ),
                       onTap: () => _openForm(_toMap(c)),
                     );
@@ -158,19 +167,22 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
   }
 
   static Map<String, dynamic> _toMap(Customer c) => {
-        'id': c.id,
-        'name': c.name,
-        'email': c.email,
-        'phone': c.phone,
-        'address': c.address,
-      };
+    'id': c.id,
+    'name': c.name,
+    'email': c.email,
+    'phone': c.phone,
+    'address': c.address,
+  };
 }
 
 class _CustomerForm extends StatefulWidget {
   const _CustomerForm({this.existing, required this.onSave});
   final Map<String, dynamic>? existing;
   final Future<void> Function(
-      Map<String, dynamic>? existing, Map<String, dynamic> data) onSave;
+    Map<String, dynamic>? existing,
+    Map<String, dynamic> data,
+  )
+  onSave;
 
   @override
   State<_CustomerForm> createState() => _CustomerFormState();
@@ -178,13 +190,18 @@ class _CustomerForm extends StatefulWidget {
 
 class _CustomerFormState extends State<_CustomerForm> {
   final _formKey = GlobalKey<FormState>();
-  late final _name = TextEditingController(text: widget.existing?['name'] ?? '');
-  late final _email =
-      TextEditingController(text: widget.existing?['email'] ?? '');
-  late final _phone =
-      TextEditingController(text: widget.existing?['phone'] ?? '');
-  late final _address =
-      TextEditingController(text: widget.existing?['address'] ?? '');
+  late final _name = TextEditingController(
+    text: widget.existing?['name'] ?? '',
+  );
+  late final _email = TextEditingController(
+    text: widget.existing?['email'] ?? '',
+  );
+  late final _phone = TextEditingController(
+    text: widget.existing?['phone'] ?? '',
+  );
+  late final _address = TextEditingController(
+    text: widget.existing?['address'] ?? '',
+  );
   bool _submitting = false;
 
   @override
@@ -198,14 +215,16 @@ class _CustomerFormState extends State<_CustomerForm> {
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _submitting = true);
-    widget.onSave(widget.existing, {
-      'name': _name.text.trim(),
-      'email': _email.text.trim().isEmpty ? null : _email.text.trim(),
-      'phone': _phone.text.trim().isEmpty ? null : _phone.text.trim(),
-      'address': _address.text.trim().isEmpty ? null : _address.text.trim(),
-    }).then((_) {
-      if (mounted) Navigator.pop(context);
-    });
+    widget
+        .onSave(widget.existing, {
+          'name': _name.text.trim(),
+          'email': _email.text.trim().isEmpty ? null : _email.text.trim(),
+          'phone': _phone.text.trim().isEmpty ? null : _phone.text.trim(),
+          'address': _address.text.trim().isEmpty ? null : _address.text.trim(),
+        })
+        .then((_) {
+          if (mounted) Navigator.pop(context);
+        });
   }
 
   @override
@@ -223,9 +242,8 @@ class _CustomerFormState extends State<_CustomerForm> {
               controller: _name,
               autofocus: true,
               decoration: const InputDecoration(labelText: 'Name *'),
-              validator: (v) => v == null || v.trim().isEmpty
-                  ? 'Required'
-                  : null,
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 16),
             TextFormField(

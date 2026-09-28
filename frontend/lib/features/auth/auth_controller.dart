@@ -23,13 +23,12 @@ class AuthState {
     bool? initialized,
     String? errorMessage,
     bool clearUser = false,
-  }) =>
-      AuthState(
-        user: clearUser ? null : user ?? this.user,
-        isLoading: isLoading ?? this.isLoading,
-        initialized: initialized ?? this.initialized,
-        errorMessage: errorMessage ?? this.errorMessage,
-      );
+  }) => AuthState(
+    user: clearUser ? null : user ?? this.user,
+    isLoading: isLoading ?? this.isLoading,
+    initialized: initialized ?? this.initialized,
+    errorMessage: errorMessage ?? this.errorMessage,
+  );
 }
 
 class AuthController extends Notifier<AuthState> {
@@ -139,5 +138,6 @@ class AuthController extends Notifier<AuthState> {
   }
 }
 
-final authControllerProvider =
-    NotifierProvider<AuthController, AuthState>(AuthController.new);
+final authControllerProvider = NotifierProvider<AuthController, AuthState>(
+  AuthController.new,
+);

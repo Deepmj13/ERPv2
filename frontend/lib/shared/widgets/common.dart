@@ -229,10 +229,12 @@ class AppDialog extends StatelessWidget {
       ),
       actions: [
         TextButton(
-          onPressed: submitting ? null : () {
-            onCancel?.call();
-            Navigator.of(context).pop();
-          },
+          onPressed: submitting
+              ? null
+              : () {
+                  onCancel?.call();
+                  Navigator.of(context).pop();
+                },
           child: const Text('Cancel'),
         ),
         FilledButton(
@@ -323,7 +325,8 @@ Future<bool> confirmDialog(
         FilledButton(
           style: destructive
               ? FilledButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.error)
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                )
               : null,
           onPressed: () => Navigator.pop(context, true),
           child: Text(confirmLabel),

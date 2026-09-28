@@ -8,22 +8,24 @@ import '../../shared/state/string_notifier.dart';
 import '../../shared/widgets/common.dart';
 import '../../shared/widgets/sale_composer.dart';
 
-final _invoicesProvider =
-    FutureProvider.autoDispose<PageResult<Invoice>>((ref) async {
+final _invoicesProvider = FutureProvider.autoDispose<PageResult<Invoice>>((
+  ref,
+) async {
   final api = ref.watch(apiClientProvider);
   final status = ref.watch(_invoiceStatusFilter);
-  final res = await api.get('/invoices', query: {
-    'limit': 200,
-    'status': ?status,
-  });
+  final res = await api.get(
+    '/invoices',
+    query: {'limit': 200, 'status': ?status},
+  );
   return PageResult.fromJsonList(
     Map<String, dynamic>.from(res as Map),
     Invoice.fromJson,
   );
 });
 
-final _invoiceStatusFilter =
-    NotifierProvider<NullableStringNotifier, String?>(NullableStringNotifier.new);
+final _invoiceStatusFilter = NotifierProvider<NullableStringNotifier, String?>(
+  NullableStringNotifier.new,
+);
 
 const _filterOptions = [
   (null, 'All'),
@@ -108,9 +110,14 @@ class InvoicesScreen extends ConsumerWidget {
                           onSelectChanged: (_) =>
                               context.go('/invoices/${inv.id}'),
                           cells: [
-                            DataCell(Text(inv.number,
+                            DataCell(
+                              Text(
+                                inv.number,
                                 style: const TextStyle(
-                                    fontWeight: FontWeight.w600))),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
                             DataCell(Text(inv.customerName ?? '-')),
                             DataCell(StatusChip(status: inv.status)),
                             DataCell(MoneyText(inv.total)),
@@ -135,8 +142,10 @@ class InvoicesScreen extends ConsumerWidget {
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          MoneyText(inv.total,
-                              style: Theme.of(context).textTheme.bodyMedium),
+                          MoneyText(
+                            inv.total,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
                           const SizedBox(width: 4),
                           StatusChip(status: inv.status),
                         ],

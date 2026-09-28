@@ -48,13 +48,13 @@ class User {
   final String? createdAt;
 
   factory User.fromJson(Map<String, dynamic> json) => User(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        email: json['email'] as String,
-        role: json['role'] as String? ?? 'MEMBER',
-        status: json['status'] as String?,
-        createdAt: json['createdAt'] as String?,
-      );
+    id: json['id'] as String,
+    name: json['name'] as String,
+    email: json['email'] as String,
+    role: json['role'] as String? ?? 'MEMBER',
+    status: json['status'] as String?,
+    createdAt: json['createdAt'] as String?,
+  );
 }
 
 class Customer {
@@ -73,12 +73,12 @@ class Customer {
   final String? address;
 
   factory Customer.fromJson(Map<String, dynamic> json) => Customer(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        email: json['email'] as String?,
-        phone: json['phone'] as String?,
-        address: json['address'] as String?,
-      );
+    id: json['id'] as String,
+    name: json['name'] as String,
+    email: json['email'] as String?,
+    phone: json['phone'] as String?,
+    address: json['address'] as String?,
+  );
 }
 
 class Category {
@@ -97,10 +97,10 @@ class Unit {
   final String? abbreviation;
 
   factory Unit.fromJson(Map<String, dynamic> json) => Unit(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        abbreviation: json['abbreviation'] as String?,
-      );
+    id: json['id'] as String,
+    name: json['name'] as String,
+    abbreviation: json['abbreviation'] as String?,
+  );
 }
 
 class Product {
@@ -159,10 +159,10 @@ class Warehouse {
   final String? location;
 
   factory Warehouse.fromJson(Map<String, dynamic> json) => Warehouse(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        location: json['location'] as String?,
-      );
+    id: json['id'] as String,
+    name: json['name'] as String,
+    location: json['location'] as String?,
+  );
 }
 
 class StockMovement {
@@ -194,7 +194,8 @@ class StockMovement {
       quantity: json['quantity'] is String
           ? num.parse(json['quantity'] as String)
           : json['quantity'] as num,
-      reference: json['reference'] as String?,
+      reference:
+          json['referenceType']?.toString() ?? json['reference']?.toString(),
       note: json['note'] as String?,
       createdAt: json['createdAt'] as String?,
       productId: json['productId'] as String?,
@@ -212,10 +213,10 @@ class DocNumber {
   final String? total;
 
   factory DocNumber.fromJson(Map<String, dynamic> json) => DocNumber(
-        number: json['number'] as String,
-        status: json['status'] as String? ?? '',
-        total: json['totalAmount']?.toString() ?? json['total']?.toString(),
-      );
+    number: json['number'] as String,
+    status: json['status'] as String? ?? '',
+    total: json['totalAmount']?.toString() ?? json['total']?.toString(),
+  );
 }
 
 class Quotation extends DocNumber {
@@ -245,7 +246,8 @@ class Quotation extends DocNumber {
       customerName: customer is Map<String, dynamic>
           ? customer['name'] as String?
           : null,
-      itemCount: json['_count']?['items'] as int? ??
+      itemCount:
+          json['_count']?['items'] as int? ??
           (json['items'] as List?)?.length ??
           json['itemCount'] as int?,
     );
@@ -270,8 +272,7 @@ class SalesOrder extends DocNumber {
       id: json['id'] as String,
       number: json['number'] as String,
       status: json['status'] as String? ?? '',
-      total:
-          json['totalAmount']?.toString() ?? json['total']?.toString(),
+      total: json['totalAmount']?.toString() ?? json['total']?.toString(),
       customerName: customer is Map<String, dynamic>
           ? customer['name'] as String?
           : null,
@@ -301,8 +302,7 @@ class Invoice extends DocNumber {
       id: json['id'] as String,
       number: json['number'] as String,
       status: json['status'] as String? ?? '',
-      total:
-          json['totalAmount']?.toString() ?? json['total']?.toString(),
+      total: json['totalAmount']?.toString() ?? json['total']?.toString(),
       customerName: customer is Map<String, dynamic>
           ? customer['name'] as String?
           : null,

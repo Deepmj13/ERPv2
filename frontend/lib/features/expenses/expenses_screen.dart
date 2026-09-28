@@ -6,8 +6,9 @@ import '../../shared/formatters/formatters.dart';
 import '../../shared/models/models.dart';
 import '../../shared/widgets/common.dart';
 
-final _expensesProvider =
-    FutureProvider.autoDispose<PageResult<Expense>>((ref) async {
+final _expensesProvider = FutureProvider.autoDispose<PageResult<Expense>>((
+  ref,
+) async {
   final api = ref.watch(apiClientProvider);
   final res = await api.get('/expenses', query: {'limit': 200});
   return PageResult.fromJsonList(
@@ -62,13 +63,15 @@ class ExpensesScreen extends ConsumerWidget {
                     ],
                     rows: [
                       for (final e in result.items)
-                        DataRow(cells: [
-                          DataCell(Text(dateOnly(e.expenseDate))),
-                          DataCell(Text(e.category ?? '-')),
-                          DataCell(Text(e.description ?? '-')),
-                          DataCell(Text(e.createdBy ?? '-')),
-                          DataCell(MoneyText(e.amount)),
-                        ]),
+                        DataRow(
+                          cells: [
+                            DataCell(Text(dateOnly(e.expenseDate))),
+                            DataCell(Text(e.category ?? '-')),
+                            DataCell(Text(e.description ?? '-')),
+                            DataCell(Text(e.createdBy ?? '-')),
+                            DataCell(MoneyText(e.amount)),
+                          ],
+                        ),
                     ],
                   );
                 }
@@ -78,15 +81,20 @@ class ExpensesScreen extends ConsumerWidget {
                   itemBuilder: (context, i) {
                     final e = result.items[i];
                     return ListTile(
-                      leading:
-                          const Icon(Icons.account_balance_wallet_outlined),
-                      title: Text([
-                        if (e.category != null) e.category!,
-                        if (e.description != null) e.description!,
-                      ].join(' · ')),
+                      leading: const Icon(
+                        Icons.account_balance_wallet_outlined,
+                      ),
+                      title: Text(
+                        [
+                          if (e.category != null) e.category!,
+                          if (e.description != null) e.description!,
+                        ].join(' · '),
+                      ),
                       subtitle: Text(dateTime(e.expenseDate)),
-                      trailing: MoneyText(e.amount,
-                          style: Theme.of(context).textTheme.bodyMedium),
+                      trailing: MoneyText(
+                        e.amount,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
                     );
                   },
                 );
@@ -138,13 +146,19 @@ class _ExpenseFormState extends ConsumerState<_ExpenseForm> {
     final dateOnly = DateFormat('yyyy-MM-dd').format(_date);
     final api = ref.read(apiClientProvider);
     try {
-      await api.post('/expenses', body: {
-        'amount': double.tryParse(_amount.text.trim()),
-        'category': _category.text.trim().isEmpty ? null : _category.text.trim(),
-        'description':
-            _description.text.trim().isEmpty ? null : _description.text.trim(),
-        'expenseDate': dateOnly,
-      });
+      await api.post(
+        '/expenses',
+        body: {
+          'amount': double.tryParse(_amount.text.trim()),
+          'category': _category.text.trim().isEmpty
+              ? null
+              : _category.text.trim(),
+          'description': _description.text.trim().isEmpty
+              ? null
+              : _description.text.trim(),
+          'expenseDate': dateOnly,
+        },
+      );
       if (mounted) Navigator.pop(context, true);
     } on Exception catch (e) {
       if (mounted) {
@@ -170,8 +184,9 @@ class _ExpenseFormState extends ConsumerState<_ExpenseForm> {
             TextFormField(
               controller: _amount,
               autofocus: true,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               decoration: const InputDecoration(labelText: 'Amount *'),
               validator: (v) {
                 if (v == null || v.trim().isEmpty) return 'Required';

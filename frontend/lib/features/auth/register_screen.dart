@@ -30,7 +30,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     try {
-      await ref.read(authControllerProvider.notifier).register(
+      await ref
+          .read(authControllerProvider.notifier)
+          .register(
             organizationName: _orgName.text.trim(),
             organizationSlug: _orgSlug.text.trim(),
             name: _name.text.trim(),
@@ -72,9 +74,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       labelText: 'Organization name',
                       prefixIcon: Icon(Icons.business_outlined),
                     ),
-                    validator: (v) => v == null || v.trim().isEmpty
-                        ? 'Required'
-                        : null,
+                    validator: (v) =>
+                        v == null || v.trim().isEmpty ? 'Required' : null,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -125,9 +126,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
                         onPressed: () => setState(() => _obscure = !_obscure),
-                        icon: Icon(_obscure
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined),
+                        icon: Icon(
+                          _obscure
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                        ),
                       ),
                     ),
                     validator: (v) =>

@@ -5,8 +5,9 @@ import '../../shared/models/models.dart';
 import '../../shared/widgets/common.dart';
 import '../../shared/widgets/sale_composer.dart';
 
-final _quotationsProvider =
-    FutureProvider.autoDispose<PageResult<Quotation>>((ref) async {
+final _quotationsProvider = FutureProvider.autoDispose<PageResult<Quotation>>((
+  ref,
+) async {
   final api = ref.watch(apiClientProvider);
   final res = await api.get('/quotations', query: {'limit': 200});
   return PageResult.fromJsonList(
@@ -15,8 +16,9 @@ final _quotationsProvider =
   );
 });
 
-final _ordersProvider =
-    FutureProvider.autoDispose<PageResult<SalesOrder>>((ref) async {
+final _ordersProvider = FutureProvider.autoDispose<PageResult<SalesOrder>>((
+  ref,
+) async {
   final api = ref.watch(apiClientProvider);
   final res = await api.get('/sales-orders', query: {'limit': 200});
   return PageResult.fromJsonList(
@@ -78,14 +80,11 @@ class SalesOrdersScreen extends ConsumerWidget {
         body: TabBarView(
           children: [
             _QuoteTab(
-              onRun: (call, success) =>
-                  _run(context, ref, call, success),
+              onRun: (call, success) => _run(context, ref, call, success),
             ),
             _OrdersTab(
-              onRun: (call, success) =>
-                  _run(context, ref, call, success),
-              onNewInvoice: () =>
-                  _openComposer(context, ref, SaleKind.invoice),
+              onRun: (call, success) => _run(context, ref, call, success),
+              onNewInvoice: () => _openComposer(context, ref, SaleKind.invoice),
             ),
           ],
         ),
@@ -102,10 +101,8 @@ class SalesOrdersScreen extends ConsumerWidget {
 class _QuoteTab extends ConsumerWidget {
   const _QuoteTab({required this.onRun});
 
-  final void Function(
-    Future<dynamic> Function(ApiClient) call,
-    String success,
-  ) onRun;
+  final void Function(Future<dynamic> Function(ApiClient) call, String success)
+  onRun;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -140,22 +137,27 @@ class _QuoteTab extends ConsumerWidget {
                         onSelected: (action) {
                           if (action == 'submit') {
                             onRun(
-                                (a) => a.post('/quotations/${q.id}/submit'),
-                                'Quotation submitted');
+                              (a) => a.post('/quotations/${q.id}/submit'),
+                              'Quotation submitted',
+                            );
                           } else if (action == 'convert') {
                             onRun(
-                                (a) => a.post('/quotations/${q.id}/convert'),
-                                'Converted to sales order');
+                              (a) => a.post('/quotations/${q.id}/convert'),
+                              'Converted to sales order',
+                            );
                           }
                         },
                         itemBuilder: (context) => [
                           if (q.status == 'DRAFT')
                             const PopupMenuItem(
-                                value: 'submit', child: Text('Submit')),
+                              value: 'submit',
+                              child: Text('Submit'),
+                            ),
                           if (q.status == 'SUBMITTED')
                             const PopupMenuItem(
-                                value: 'convert',
-                                child: Text('Convert to order')),
+                              value: 'convert',
+                              child: Text('Convert to order'),
+                            ),
                         ],
                       ),
                     ],
@@ -172,10 +174,8 @@ class _QuoteTab extends ConsumerWidget {
 class _OrdersTab extends ConsumerWidget {
   const _OrdersTab({required this.onRun, required this.onNewInvoice});
 
-  final void Function(
-    Future<dynamic> Function(ApiClient) call,
-    String success,
-  ) onRun;
+  final void Function(Future<dynamic> Function(ApiClient) call, String success)
+  onRun;
   final VoidCallback onNewInvoice;
 
   @override
@@ -214,14 +214,16 @@ class _OrdersTab extends ConsumerWidget {
                       PopupMenuButton<String>(
                         onSelected: (_) {
                           onRun(
-                              (a) => a.post(
-                                  '/sales-orders/${o.id}/create-invoice'),
-                              'Invoice created');
+                            (a) =>
+                                a.post('/sales-orders/${o.id}/create-invoice'),
+                            'Invoice created',
+                          );
                         },
                         itemBuilder: (context) => const [
                           PopupMenuItem(
-                              value: 'invoice',
-                              child: Text('Create invoice')),
+                            value: 'invoice',
+                            child: Text('Create invoice'),
+                          ),
                         ],
                       ),
                   ],

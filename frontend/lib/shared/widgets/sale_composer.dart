@@ -91,14 +91,21 @@ class _SaleComposerState extends ConsumerState<SaleComposer> {
 
   void _addItem(Map<String, dynamic> product) {
     setState(() {
-      _items.add(SaleItem(
-        productId: product['id'] as String,
-        name: product['name'] as String,
-        quantity: 1,
-        unitPrice: num.tryParse(product['salePrice']?.toString() ?? '')?.toDouble() ?? 0,
-        taxRate:
-            num.tryParse(product['taxRate']?.toString() ?? '0')?.toDouble() ?? 0,
-      ));
+      _items.add(
+        SaleItem(
+          productId: product['id'] as String,
+          name: product['name'] as String,
+          quantity: 1,
+          unitPrice:
+              num.tryParse(
+                product['salePrice']?.toString() ?? '',
+              )?.toDouble() ??
+              0,
+          taxRate:
+              num.tryParse(product['taxRate']?.toString() ?? '0')?.toDouble() ??
+              0,
+        ),
+      );
     });
   }
 
@@ -163,134 +170,134 @@ class _SaleComposerState extends ConsumerState<SaleComposer> {
         width: 640,
         child: _loading
             ? const SizedBox(
-                height: 200, child: Center(child: CircularProgressIndicator()))
+                height: 200,
+                child: Center(child: CircularProgressIndicator()),
+              )
             : _error != null
-                ? ErrorView(message: _error!, onRetry: _loadLookups)
-                : Form(
-                    key: _formKey,
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+            ? ErrorView(message: _error!, onRetry: _loadLookups)
+            : Form(
+                key: _formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      DropdownButtonFormField<String>(
+                        initialValue: _customerId,
+                        decoration: const InputDecoration(
+                          labelText: 'Customer *',
+                        ),
+                        items: [
+                          for (final c in _customers)
+                            DropdownMenuItem(
+                              value: c['id'] as String,
+                              child: Text(c['name'] as String),
+                            ),
+                        ],
+                        onChanged: (v) => setState(() => _customerId = v),
+                      ),
+                      if (_customers.isEmpty)
+                        const Text(
+                          'No customers yet. Add a customer first.',
+                          style: TextStyle(color: Colors.orange),
+                        ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Line items',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const Divider(height: 8),
+                      for (var i = 0; i < _items.length; i++) ...[
+                        _LineItemRow(
+                          item: _items[i],
+                          products: _products,
+                          onChanged: (updated) =>
+                              setState(() => _items[i] = updated),
+                          onRemove: () => setState(() => _items.removeAt(i)),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                      if (_items.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          child: Text('No items yet.'),
+                        ),
+                      DropdownButtonFormField<String>(
+                        decoration: const InputDecoration(
+                          labelText: 'Add product',
+                        ),
+                        items: [
+                          for (final p in _products)
+                            DropdownMenuItem(
+                              value: p['id'] as String,
+                              child: Text(
+                                '${p['name']} '
+                                '(stock: ${p['stockQuantity'] ?? p['quantity'] ?? 0})',
+                              ),
+                            ),
+                        ],
+                        onChanged: (id) {
+                          if (id == null) return;
+                          final product = _products.firstWhere(
+                            (p) => p['id'] == id,
+                          );
+                          _addItem(product);
+                        },
+                      ),
+                      const Divider(height: 24),
+                      Row(
                         children: [
-                          DropdownButtonFormField<String>(
-                            initialValue: _customerId,
-                            decoration: const InputDecoration(
-                                labelText: 'Customer *'),
-                            items: [
-                              for (final c in _customers)
-                                DropdownMenuItem(
-                                  value: c['id'] as String,
-                                  child: Text(c['name'] as String),
-                                ),
-                            ],
-                            onChanged: (v) =>
-                                setState(() => _customerId = v),
-                          ),
-                          if (_customers.isEmpty)
-                            const Text(
-                              'No customers yet. Add a customer first.',
-                              style: TextStyle(color: Colors.orange),
+                          const Spacer(),
+                          Text('Subtotal ', style: _labelStyle),
+                          SizedBox(
+                            width: 100,
+                            child: Text(
+                              money(_subtotal),
+                              textAlign: TextAlign.right,
+                              style: _labelStyle,
                             ),
-                          const SizedBox(height: 16),
-                          Text('Line items',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleSmall
-                                  ?.copyWith(fontWeight: FontWeight.w700)),
-                          const Divider(height: 8),
-                          for (var i = 0; i < _items.length; i++) ...[
-                            _LineItemRow(
-                              item: _items[i],
-                              products: _products,
-                              onChanged: (updated) =>
-                                  setState(() => _items[i] = updated),
-                              onRemove: () =>
-                                  setState(() => _items.removeAt(i)),
-                            ),
-                            const SizedBox(height: 8),
-                          ],
-                          if (_items.isEmpty)
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 8),
-                              child: Text('No items yet.'),
-                            ),
-                          DropdownButtonFormField<String>(
-                            decoration:
-                                const InputDecoration(labelText: 'Add product'),
-                            items: [
-                              for (final p in _products)
-                                DropdownMenuItem(
-                                  value: p['id'] as String,
-                                  child: Text(
-                                    '${p['name']} '
-                                    '(stock: ${p['stockQuantity'] ?? p['quantity'] ?? 0})',
-                                  ),
-                                ),
-                            ],
-                            onChanged: (id) {
-                              if (id == null) return;
-                              final product =
-                                  _products.firstWhere((p) => p['id'] == id);
-                              _addItem(product);
-                            },
-                          ),
-                          const Divider(height: 24),
-                          Row(
-                            children: [
-                              const Spacer(),
-                              Text('Subtotal ', style: _labelStyle),
-                              SizedBox(
-                                width: 100,
-                                child: Text(
-                                  money(_subtotal),
-                                  textAlign: TextAlign.right,
-                                  style: _labelStyle,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              const Spacer(),
-                              Text('Tax ', style: _labelStyle),
-                              SizedBox(
-                                width: 100,
-                                child: Text(
-                                  money(_tax),
-                                  textAlign: TextAlign.right,
-                                  style: _labelStyle,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              const Spacer(),
-                              Text('Total ',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
-                                      ?.copyWith(
-                                          fontWeight: FontWeight.w700)),
-                              SizedBox(
-                                width: 100,
-                                child: Text(
-                                  money(_total),
-                                  textAlign: TextAlign.right,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
-                                      ?.copyWith(
-                                          fontWeight: FontWeight.w700),
-                                ),
-                              ),
-                            ],
                           ),
                         ],
                       ),
-                    ),
+                      Row(
+                        children: [
+                          const Spacer(),
+                          Text('Tax ', style: _labelStyle),
+                          SizedBox(
+                            width: 100,
+                            child: Text(
+                              money(_tax),
+                              textAlign: TextAlign.right,
+                              style: _labelStyle,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          const Spacer(),
+                          Text(
+                            'Total ',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                          SizedBox(
+                            width: 100,
+                            child: Text(
+                              money(_total),
+                              textAlign: TextAlign.right,
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
+                ),
+              ),
       ),
       actions: [
         TextButton(
@@ -303,7 +310,8 @@ class _SaleComposerState extends ConsumerState<SaleComposer> {
               ? const SizedBox(
                   width: 18,
                   height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2))
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
               : Text(switch (widget.kind) {
                   SaleKind.quotation => 'Create quotation',
                   SaleKind.order => 'Create order',
@@ -361,39 +369,45 @@ class _LineItemRow extends StatelessWidget {
                 label: 'Qty',
                 initial: item.quantity.toString(),
                 width: 70,
-                onChanged: (v) => onChanged(SaleItem(
-                  productId: item.productId,
-                  name: item.name,
-                  quantity: num.tryParse(v)?.toDouble() ?? 0,
-                  unitPrice: item.unitPrice,
-                  taxRate: item.taxRate,
-                )),
+                onChanged: (v) => onChanged(
+                  SaleItem(
+                    productId: item.productId,
+                    name: item.name,
+                    quantity: num.tryParse(v)?.toDouble() ?? 0,
+                    unitPrice: item.unitPrice,
+                    taxRate: item.taxRate,
+                  ),
+                ),
               ),
               const SizedBox(width: 8),
               _Field(
                 label: 'Unit price',
                 initial: item.unitPrice.toString(),
                 width: 100,
-                onChanged: (v) => onChanged(SaleItem(
-                  productId: item.productId,
-                  name: item.name,
-                  quantity: item.quantity,
-                  unitPrice: num.tryParse(v)?.toDouble() ?? 0,
-                  taxRate: item.taxRate,
-                )),
+                onChanged: (v) => onChanged(
+                  SaleItem(
+                    productId: item.productId,
+                    name: item.name,
+                    quantity: item.quantity,
+                    unitPrice: num.tryParse(v)?.toDouble() ?? 0,
+                    taxRate: item.taxRate,
+                  ),
+                ),
               ),
               const SizedBox(width: 8),
               _Field(
                 label: 'Tax %',
                 initial: item.taxRate.toString(),
                 width: 70,
-                onChanged: (v) => onChanged(SaleItem(
-                  productId: item.productId,
-                  name: item.name,
-                  quantity: item.quantity,
-                  unitPrice: item.unitPrice,
-                  taxRate: num.tryParse(v)?.toDouble() ?? 0,
-                )),
+                onChanged: (v) => onChanged(
+                  SaleItem(
+                    productId: item.productId,
+                    name: item.name,
+                    quantity: item.quantity,
+                    unitPrice: item.unitPrice,
+                    taxRate: num.tryParse(v)?.toDouble() ?? 0,
+                  ),
+                ),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -430,12 +444,8 @@ class _Field extends StatelessWidget {
       width: width,
       child: TextFormField(
         initialValue: initial,
-        keyboardType:
-            const TextInputType.numberWithOptions(decimal: true),
-        decoration: InputDecoration(
-          labelText: label,
-          isDense: true,
-        ),
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        decoration: InputDecoration(labelText: label, isDense: true),
         onChanged: onChanged,
       ),
     );

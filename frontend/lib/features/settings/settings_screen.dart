@@ -24,17 +24,17 @@ class SettingsScreen extends ConsumerWidget {
                 children: [
                   Text(
                     'Workspace',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w700),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   _Row(label: 'Name', value: org?['name'] ?? '-'),
                   _Row(label: 'Slug', value: org?['slug'] ?? '-'),
                   _Row(
-                      label: 'You',
-                      value: '${user?['name'] ?? '-'} (${user?['email'] ?? '-'})'),
+                    label: 'You',
+                    value: '${user?['name'] ?? '-'} (${user?['email'] ?? '-'})',
+                  ),
                   _Row(label: 'Role', value: user?['role'] ?? '-'),
                 ],
               ),
@@ -97,8 +97,8 @@ class _Row extends StatelessWidget {
             child: Text(
               label,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.outline,
-                  ),
+                color: Theme.of(context).colorScheme.outline,
+              ),
             ),
           ),
           Expanded(
@@ -145,10 +145,9 @@ class _ChangePasswordDialogState extends ConsumerState<_ChangePasswordDialog> {
     }
     setState(() => _submitting = true);
     try {
-      await ref.read(authControllerProvider.notifier).changePassword(
-            oldPassword: _old.text,
-            newPassword: _new.text,
-          );
+      await ref
+          .read(authControllerProvider.notifier)
+          .changePassword(oldPassword: _old.text, newPassword: _new.text);
       if (mounted) {
         Navigator.pop(context);
         showMessage(context, 'Password updated');
@@ -185,12 +184,15 @@ class _ChangePasswordDialogState extends ConsumerState<_ChangePasswordDialog> {
                 labelText: 'New password',
                 suffixIcon: IconButton(
                   onPressed: () => setState(() => _obscure = !_obscure),
-                  icon: Icon(_obscure
-                      ? Icons.visibility_outlined
-                      : Icons.visibility_off_outlined),
+                  icon: Icon(
+                    _obscure
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                  ),
                 ),
               ),
-              validator: (v) => v == null || v.length < 8 ? 'Min 8 characters' : null,
+              validator: (v) =>
+                  v == null || v.length < 8 ? 'Min 8 characters' : null,
             ),
             const SizedBox(height: 16),
             TextFormField(

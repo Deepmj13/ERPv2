@@ -26,10 +26,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     try {
-      await ref.read(authControllerProvider.notifier).login(
-            _email.text.trim(),
-            _password.text,
-          );
+      await ref
+          .read(authControllerProvider.notifier)
+          .login(_email.text.trim(), _password.text);
       if (mounted) context.go('/');
     } on Exception catch (e) {
       if (mounted) {
@@ -86,8 +85,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           labelText: 'Email',
                           prefixIcon: Icon(Icons.mail_outline),
                         ),
-                        validator: (v) =>
-                            v == null || v.trim().isEmpty ? 'Enter email' : null,
+                        validator: (v) => v == null || v.trim().isEmpty
+                            ? 'Enter email'
+                            : null,
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
@@ -99,14 +99,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           suffixIcon: IconButton(
                             onPressed: () =>
                                 setState(() => _obscure = !_obscure),
-                            icon: Icon(_obscure
-                                ? Icons.visibility_outlined
-                                : Icons.visibility_off_outlined),
+                            icon: Icon(
+                              _obscure
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                            ),
                           ),
                         ),
-                        validator: (v) => v == null || v.isEmpty
-                            ? 'Enter password'
-                            : null,
+                        validator: (v) =>
+                            v == null || v.isEmpty ? 'Enter password' : null,
                         onFieldSubmitted: (_) => _submit(),
                       ),
                       const SizedBox(height: 24),
@@ -116,7 +117,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ? const SizedBox(
                                 width: 20,
                                 height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Text('Sign in'),
                       ),

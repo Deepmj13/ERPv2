@@ -5,22 +5,24 @@ import '../../shared/models/models.dart';
 import '../../shared/state/string_notifier.dart';
 import '../../shared/widgets/common.dart';
 
-final _productsProvider =
-    FutureProvider.autoDispose<PageResult<Product>>((ref) async {
+final _productsProvider = FutureProvider.autoDispose<PageResult<Product>>((
+  ref,
+) async {
   final api = ref.watch(apiClientProvider);
   final search = ref.watch(_searchProvider);
-  final res = await api.get('/products', query: {
-    'search': search.isEmpty ? null : search,
-    'limit': 200,
-  });
+  final res = await api.get(
+    '/products',
+    query: {'search': search.isEmpty ? null : search, 'limit': 200},
+  );
   return PageResult.fromJsonList(
     Map<String, dynamic>.from(res as Map),
     Product.fromJson,
   );
 });
 
-final _searchProvider =
-    NotifierProvider<StringNotifier, String>(StringNotifier.new);
+final _searchProvider = NotifierProvider<StringNotifier, String>(
+  StringNotifier.new,
+);
 
 class ProductsScreen extends ConsumerStatefulWidget {
   const ProductsScreen({super.key});
@@ -116,25 +118,34 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                       for (final p in products)
                         DataRow(
                           cells: [
-                            DataCell(Text(p.name,
+                            DataCell(
+                              Text(
+                                p.name,
                                 style: const TextStyle(
-                                    fontWeight: FontWeight.w600))),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
                             DataCell(Text(p.sku ?? '-')),
                             DataCell(Text(p.category ?? '-')),
                             DataCell(Text(p.unit ?? '-')),
                             DataCell(MoneyText(p.salePrice)),
-                            DataCell(Text(
-                              '${p.stockQuantity ?? 0}',
-                              style: TextStyle(
-                                color: (p.stockQuantity ?? 0) <= 0
-                                    ? Theme.of(context).colorScheme.error
-                                    : null,
+                            DataCell(
+                              Text(
+                                '${p.stockQuantity ?? 0}',
+                                style: TextStyle(
+                                  color: (p.stockQuantity ?? 0) <= 0
+                                      ? Theme.of(context).colorScheme.error
+                                      : null,
+                                ),
                               ),
-                            )),
-                            DataCell(IconButton(
-                              icon: const Icon(Icons.more_vert),
-                              onPressed: () => _openForm(_toMap(p)),
-                            )),
+                            ),
+                            DataCell(
+                              IconButton(
+                                icon: const Icon(Icons.more_vert),
+                                onPressed: () => _openForm(_toMap(p)),
+                              ),
+                            ),
                           ],
                         ),
                     ],
@@ -147,15 +158,20 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                     final p = products[i];
                     return ListTile(
                       leading: const CircleAvatar(
-                          child: Icon(Icons.inventory_2)),
+                        child: Icon(Icons.inventory_2),
+                      ),
                       title: Text(p.name),
-                      subtitle: Text([
-                        if (p.sku != null) p.sku!,
-                        if (p.category != null) p.category!,
-                        '${p.stockQuantity ?? 0} in stock',
-                      ].join(' · ')),
-                      trailing: MoneyText(p.salePrice,
-                          style: Theme.of(context).textTheme.bodyMedium),
+                      subtitle: Text(
+                        [
+                          if (p.sku != null) p.sku!,
+                          if (p.category != null) p.category!,
+                          '${p.stockQuantity ?? 0} in stock',
+                        ].join(' · '),
+                      ),
+                      trailing: MoneyText(
+                        p.salePrice,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
                       onTap: () => _openForm(_toMap(p)),
                     );
                   },
@@ -169,17 +185,17 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
   }
 
   static Map<String, dynamic> _toMap(Product p) => {
-        'id': p.id,
-        'name': p.name,
-        'sku': p.sku,
-      };
+    'id': p.id,
+    'name': p.name,
+    'sku': p.sku,
+  };
 }
 
 class _ProductForm extends ConsumerStatefulWidget {
   const _ProductForm({this.product, required this.onSave});
   final Map<String, dynamic>? product;
   final void Function(Map<String, dynamic>? existing, Map<String, dynamic> data)
-      onSave;
+  onSave;
 
   @override
   ConsumerState<_ProductForm> createState() => _ProductFormState();
@@ -187,15 +203,17 @@ class _ProductForm extends ConsumerStatefulWidget {
 
 class _ProductFormState extends ConsumerState<_ProductForm> {
   final _formKey = GlobalKey<FormState>();
-  late final _name =
-      TextEditingController(text: widget.product?['name'] ?? '');
+  late final _name = TextEditingController(text: widget.product?['name'] ?? '');
   late final _sku = TextEditingController(text: widget.product?['sku'] ?? '');
   late final _price = TextEditingController(
-      text: widget.product?['salePrice']?.toString() ?? '');
+    text: widget.product?['salePrice']?.toString() ?? '',
+  );
   late final _cost = TextEditingController(
-      text: widget.product?['costPrice']?.toString() ?? '');
+    text: widget.product?['costPrice']?.toString() ?? '',
+  );
   late final _tax = TextEditingController(
-      text: widget.product?['taxRate']?.toString() ?? '0');
+    text: widget.product?['taxRate']?.toString() ?? '0',
+  );
   String? _categoryId;
 
   List<Category> _categories = [];
@@ -286,8 +304,11 @@ class _ProductFormState extends ConsumerState<_ProductForm> {
                   child: TextFormField(
                     controller: _price,
                     keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true),
-                    decoration: const InputDecoration(labelText: 'Sale price *'),
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Sale price *',
+                    ),
                     validator: (v) {
                       if (v == null || v.trim().isEmpty) return 'Required';
                       if (double.tryParse(v) == null) return 'Invalid';
@@ -300,7 +321,8 @@ class _ProductFormState extends ConsumerState<_ProductForm> {
                   child: TextFormField(
                     controller: _cost,
                     keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true),
+                      decimal: true,
+                    ),
                     decoration: const InputDecoration(labelText: 'Cost price'),
                   ),
                 ),
@@ -309,8 +331,9 @@ class _ProductFormState extends ConsumerState<_ProductForm> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _tax,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               decoration: const InputDecoration(
                 labelText: 'Tax rate (%)',
                 helperText: '0 = tax excluded, 10 = 10%',

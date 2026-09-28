@@ -5,9 +5,7 @@ final _dateOnly = DateFormat('yyyy-MM-dd');
 final _dateTime = DateFormat('yyyy-MM-dd HH:mm');
 
 String money(dynamic value) {
-  final n = value is num
-      ? value
-      : num.tryParse(value?.toString() ?? '');
+  final n = value is num ? value : num.tryParse(value?.toString() ?? '');
   if (n == null) return _money.format(0);
   return _money.format(n);
 }

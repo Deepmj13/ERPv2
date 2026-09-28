@@ -16,11 +16,16 @@ final _dashboardProvider = FutureProvider<_SummaryData>((ref) async {
   final api = ref.watch(apiClientProvider);
   final summary = await api.get('/dashboard/summary');
   final recent = List<Map<String, dynamic>>.from(
-      (await api.get('/invoices', query: {'limit': 6, 'sort': 'createdAt:desc'}))
-          ['items'] as List);
+    (await api.get(
+          '/invoices',
+          query: {'limit': 6, 'sort': 'createdAt:desc'},
+        ))['items']
+        as List,
+  );
   return _SummaryData(
     summary: DashboardSummary.fromJson(
-        Map<String, dynamic>.from(summary as Map)),
+      Map<String, dynamic>.from(summary as Map),
+    ),
     recent: recent,
   );
 });
@@ -52,8 +57,8 @@ class DashboardScreen extends ConsumerWidget {
                 builder: (context, constraints) {
                   final itemCount = 4;
                   final spacing = 12.0;
-                  final itemWidth = (constraints.maxWidth -
-                          (spacing * (itemCount - 1))) /
+                  final itemWidth =
+                      (constraints.maxWidth - (spacing * (itemCount - 1))) /
                       itemCount;
                   final horizontal = itemWidth >= 130;
                   return Wrap(
@@ -88,9 +93,7 @@ class DashboardScreen extends ConsumerWidget {
                         color: Colors.red,
                         child: Text(
                           '${s.lowStock ?? 0}',
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineSmall
+                          style: Theme.of(context).textTheme.headlineSmall
                               ?.copyWith(fontWeight: FontWeight.w700),
                         ),
                       ),
@@ -108,9 +111,7 @@ class DashboardScreen extends ConsumerWidget {
                       color: Colors.teal,
                       child: Text(
                         '${s.totalCustomers ?? 0}',
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineSmall
+                        style: Theme.of(context).textTheme.headlineSmall
                             ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                     ),
@@ -123,9 +124,7 @@ class DashboardScreen extends ConsumerWidget {
                       color: Colors.blueGrey,
                       child: Text(
                         '${s.totalProducts ?? 0}',
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineSmall
+                        style: Theme.of(context).textTheme.headlineSmall
                             ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                     ),
@@ -138,9 +137,7 @@ class DashboardScreen extends ConsumerWidget {
                       color: Colors.deepPurple,
                       child: Text(
                         '${s.totalInvoices ?? 0}',
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineSmall
+                        style: Theme.of(context).textTheme.headlineSmall
                             ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                     ),
@@ -152,10 +149,9 @@ class DashboardScreen extends ConsumerWidget {
                 children: [
                   Text(
                     'Recent invoices',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w600),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const Spacer(),
                   TextButton.icon(
@@ -170,7 +166,8 @@ class DashboardScreen extends ConsumerWidget {
                 child: data.recent.isEmpty
                     ? const EmptyState(
                         icon: Icons.receipt_long_outlined,
-                        message: 'No invoices yet. Create your first invoice '
+                        message:
+                            'No invoices yet. Create your first invoice '
                             'from the Customers or Invoices section.',
                       )
                     : Column(
@@ -181,15 +178,15 @@ class DashboardScreen extends ConsumerWidget {
                               title: Text(
                                 inv['number'] as String,
                                 style: const TextStyle(
-                                    fontWeight: FontWeight.w600),
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                               subtitle: Text(
                                 '${(inv['customer'] as Map?)?['name'] ?? '-'}'
                                 ' · ${dateOnly(inv['createdAt'] as String?)}',
                               ),
                               trailing: MoneyText(inv['totalAmount']),
-                              onTap: () =>
-                                  context.go('/invoices/${inv['id']}'),
+                              onTap: () => context.go('/invoices/${inv['id']}'),
                             ),
                         ],
                       ),
@@ -231,10 +228,7 @@ class _StatCard extends StatelessWidget {
               const SizedBox(height: 12),
               child,
               const SizedBox(height: 4),
-              Text(
-                label,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
+              Text(label, style: Theme.of(context).textTheme.bodySmall),
             ],
           ),
         ),

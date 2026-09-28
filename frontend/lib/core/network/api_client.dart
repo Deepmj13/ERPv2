@@ -45,8 +45,7 @@ class ApiClient {
           handler.next(options);
         },
         onError: (error, handler) async {
-          final alreadyRetried =
-              error.requestOptions.extra['retried'] == true;
+          final alreadyRetried = error.requestOptions.extra['retried'] == true;
           if (error.response?.statusCode == 401 && !alreadyRetried) {
             error.requestOptions.extra['retried'] = true;
             try {
@@ -91,10 +90,7 @@ class ApiClient {
     await storage.saveTokens(access, refresh);
   }
 
-  Future<dynamic> get(
-    String path, {
-    Map<String, dynamic>? query,
-  }) async {
+  Future<dynamic> get(String path, {Map<String, dynamic>? query}) async {
     try {
       final res = await _dio.get<dynamic>(path, queryParameters: query);
       return res.data;

@@ -5,8 +5,9 @@ import '../../features/auth/auth_controller.dart';
 import '../../shared/models/models.dart';
 import '../../shared/widgets/common.dart';
 
-final _usersProvider =
-    FutureProvider.autoDispose<PageResult<User>>((ref) async {
+final _usersProvider = FutureProvider.autoDispose<PageResult<User>>((
+  ref,
+) async {
   final api = ref.watch(apiClientProvider);
   final res = await api.get('/users', query: {'limit': 200});
   return PageResult.fromJsonList(
@@ -27,12 +28,9 @@ class UsersScreen extends ConsumerWidget {
       onRefresh: () async => ref.invalidate(_usersProvider),
       onAdd: isAdmin
           ? () => showDialog(
-                context: context,
-                builder: (context) => _UserForm(
-                  user: const {},
-                  isNew: true,
-                ),
-              )
+              context: context,
+              builder: (context) => _UserForm(user: const {}, isNew: true),
+            )
           : null,
       child: AsyncDataView(
         provider: _usersProvider,
@@ -46,9 +44,12 @@ class UsersScreen extends ConsumerWidget {
                 for (final u in result.items)
                   ListTile(
                     leading: CircleAvatar(
-                        child: Text(u.name.isEmpty ? '?' : u.name[0])),
-                    title: Text(u.name,
-                        style: const TextStyle(fontWeight: FontWeight.w600)),
+                      child: Text(u.name.isEmpty ? '?' : u.name[0]),
+                    ),
+                    title: Text(
+                      u.name,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
                     subtitle: Text(u.email),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -62,10 +63,10 @@ class UsersScreen extends ConsumerWidget {
                     ),
                     onTap: isAdmin && u.id != me
                         ? () => showDialog(
-                              context: context,
-                              builder: (context) =>
-                                  _UserForm(user: _toMap(u), isNew: false),
-                            )
+                            context: context,
+                            builder: (context) =>
+                                _UserForm(user: _toMap(u), isNew: false),
+                          )
                         : null,
                   ),
               ],
@@ -77,12 +78,12 @@ class UsersScreen extends ConsumerWidget {
   }
 
   static Map<String, dynamic> _toMap(User u) => {
-        'id': u.id,
-        'name': u.name,
-        'email': u.email,
-        'role': u.role,
-        'status': u.status,
-      };
+    'id': u.id,
+    'name': u.name,
+    'email': u.email,
+    'role': u.role,
+    'status': u.status,
+  };
 }
 
 class _UserForm extends ConsumerStatefulWidget {
@@ -96,10 +97,8 @@ class _UserForm extends ConsumerStatefulWidget {
 
 class _UserFormState extends ConsumerState<_UserForm> {
   final _formKey = GlobalKey<FormState>();
-  late final _name =
-      TextEditingController(text: widget.user['name'] ?? '');
-  late final _email =
-      TextEditingController(text: widget.user['email'] ?? '');
+  late final _name = TextEditingController(text: widget.user['name'] ?? '');
+  late final _email = TextEditingController(text: widget.user['email'] ?? '');
   late String? _role = widget.user['role'] ?? 'MEMBER';
   bool _submitting = false;
 

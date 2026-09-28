@@ -8,18 +8,18 @@ import 'package:basic_erp/core/storage/auth_storage.dart';
 
 class _FakeApiClient extends ApiClient {
   _FakeApiClient()
-      : super(
-          baseUrl: 'http://localhost:3000/api/v1',
-          storage: const AuthStorage(FlutterSecureStorage()),
-        );
+    : super(
+        baseUrl: 'http://localhost:3000/api/v1',
+        storage: const AuthStorage(FlutterSecureStorage()),
+      );
 
   @override
   Future<dynamic> get(String path, {Map<String, dynamic>? query}) async => {
-        'items': <dynamic>[],
-        'total': 0,
-        'page': 1,
-        'limit': 20,
-      };
+    'items': <dynamic>[],
+    'total': 0,
+    'page': 1,
+    'limit': 20,
+  };
 
   @override
   Future<dynamic> post(String path, {Object? body}) async =>

@@ -5,8 +5,9 @@ import '../../shared/formatters/formatters.dart';
 import '../../shared/models/models.dart';
 import '../../shared/widgets/common.dart';
 
-final _auditProvider =
-    FutureProvider.autoDispose<PageResult<AuditLogEntry>>((ref) async {
+final _auditProvider = FutureProvider.autoDispose<PageResult<AuditLogEntry>>((
+  ref,
+) async {
   final api = ref.watch(apiClientProvider);
   final res = await api.get('/audit-logs', query: {'limit': 100});
   return PageResult.fromJsonList(
@@ -43,9 +44,11 @@ class AuditScreen extends ConsumerWidget {
                 final e = result.items[i];
                 return ListTile(
                   leading: CircleAvatar(
-                    child: Text(e.actorName == null || e.actorName!.isEmpty
-                        ? '?'
-                        : e.actorName![0]),
+                    child: Text(
+                      e.actorName == null || e.actorName!.isEmpty
+                          ? '?'
+                          : e.actorName![0],
+                    ),
                   ),
                   title: Text(
                     '${e.action ?? ''} ${e.entityType ?? ''}'

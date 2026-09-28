@@ -12,11 +12,13 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      scaffoldBackgroundColor:
-          brightness == Brightness.light ? const Color(0xFFF5F6FA) : null,
+      scaffoldBackgroundColor: brightness == Brightness.light
+          ? const Color(0xFFF5F6FA)
+          : null,
       appBarTheme: AppBarTheme(
-        backgroundColor:
-            brightness == Brightness.light ? const Color(0xFFF5F6FA) : null,
+        backgroundColor: brightness == Brightness.light
+            ? const Color(0xFFF5F6FA)
+            : null,
         elevation: 0,
         scrolledUnderElevation: 0,
       ),
@@ -25,15 +27,15 @@ class AppTheme {
         color: brightness == Brightness.light ? Colors.white : null,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(
-            color: scheme.outlineVariant.withValues(alpha: 0.5),
-          ),
+          side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5)),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 12,
+        ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(

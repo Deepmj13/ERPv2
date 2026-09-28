@@ -5,8 +5,9 @@ import '../../shared/formatters/formatters.dart';
 import '../../shared/models/models.dart';
 import '../../shared/widgets/common.dart';
 
-final _paymentsProvider =
-    FutureProvider.autoDispose<PageResult<Payment>>((ref) async {
+final _paymentsProvider = FutureProvider.autoDispose<PageResult<Payment>>((
+  ref,
+) async {
   final api = ref.watch(apiClientProvider);
   final res = await api.get('/payments', query: {'limit': 200});
   return PageResult.fromJsonList(
@@ -58,17 +59,25 @@ class PaymentsScreen extends ConsumerWidget {
                     ],
                     rows: [
                       for (final p in result.items)
-                        DataRow(cells: [
-                          DataCell(Text(p.number,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w600))),
-                          DataCell(Text(p.invoiceNumber ?? '-')),
-                          DataCell(Text(p.method)),
-                          DataCell(Text(dateTime(p.createdAt))),
-                          DataCell(MoneyText(p.amount)),
-                          DataCell(StatusChip(
-                              status: p.status ?? 'COMPLETED')),
-                        ]),
+                        DataRow(
+                          cells: [
+                            DataCell(
+                              Text(
+                                p.number,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            DataCell(Text(p.invoiceNumber ?? '-')),
+                            DataCell(Text(p.method)),
+                            DataCell(Text(dateTime(p.createdAt))),
+                            DataCell(MoneyText(p.amount)),
+                            DataCell(
+                              StatusChip(status: p.status ?? 'COMPLETED'),
+                            ),
+                          ],
+                        ),
                     ],
                   );
                 }
@@ -79,16 +88,21 @@ class PaymentsScreen extends ConsumerWidget {
                     final p = result.items[i];
                     return ListTile(
                       leading: const Icon(Icons.payments_outlined),
-                      title: Text(p.number,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w600)),
-                      subtitle: Text([
-                        if (p.invoiceNumber != null) p.invoiceNumber!,
-                        p.method,
-                        dateTime(p.createdAt),
-                      ].join(' · ')),
-                      trailing: MoneyText(p.amount,
-                          style: Theme.of(context).textTheme.bodyMedium),
+                      title: Text(
+                        p.number,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: Text(
+                        [
+                          if (p.invoiceNumber != null) p.invoiceNumber!,
+                          p.method,
+                          dateTime(p.createdAt),
+                        ].join(' · '),
+                      ),
+                      trailing: MoneyText(
+                        p.amount,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
                     );
                   },
                 );
