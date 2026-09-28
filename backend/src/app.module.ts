@@ -21,6 +21,7 @@ import { PaymentsModule } from './payments/payments.module.js';
 import { DashboardModule } from './dashboard/dashboard.module.js';
 import { ExpensesModule } from './expenses/expenses.module.js';
 import { AuditModule } from './audit/audit.module.js';
+import { HealthModule } from './health/health.module.js';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { AuditModule } from './audit/audit.module.js';
     DashboardModule,
     ExpensesModule,
     AuditModule,
+    HealthModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

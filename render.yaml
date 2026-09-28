@@ -5,6 +5,7 @@ services:
     rootDir: backend
     buildCommand: npm ci && npx prisma generate && npx prisma migrate deploy && npm run build
     startCommand: npm run start:prod
+    healthCheckPath: /api/v1/health
     envVars:
       - key: DATABASE_URL
         sync: false

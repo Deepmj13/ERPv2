@@ -47,6 +47,15 @@ const api = (token?: string) => {
   };
 };
 
+  describe('health', () => {
+    it('is public and reports the database connection', async () => {
+      const res = await api().get('/api/v1/health').expect(200);
+      expect(res.body.status).toBe('ok');
+      expect(res.body.database).toBe('up');
+      expect(typeof res.body.uptime).toBe('number');
+    });
+  });
+
   describe('auth', () => {
     it('registers two organizations and returns tokens', async () => {
       const ra = await api().post('/api/v1/auth/register').send({

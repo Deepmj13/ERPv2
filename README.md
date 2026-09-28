@@ -60,7 +60,7 @@ password: Admin@123
 
 ```bash
 npm run lint        # oxlint
-npm run test:e2e    # 11 end-to-end tests against the configured database (Neon)
+npm run test:e2e    # 12 end-to-end tests against the configured database (Neon)
 npx tsc --noEmit -p tsconfig.build.json
 npm run build
 ```
@@ -101,7 +101,9 @@ flutter build apk --release # Android
 - Payments (overpayment blocked, anti-duplicate), outstanding balances
 - Expenses
 - Inventory: warehouses, movements (sale/purchase/adjust/transfer/return), low-stock
+- Stock actions: receive, adjust and transfer stock from the Inventory screen
 - Dashboard KPIs, audit log
+- Health check at `GET /api/v1/health` (public, verifies the database connection)
 
 Every tenant-owned table carries `organization_id`; the backend derives the
 org from the JWT (never from the client) and a global tenant extension scopes
@@ -121,6 +123,7 @@ server-side audit logs, parameterized Prisma queries, secrets via environment.
 - Start: `npm run start:prod`
 - Env vars: `DATABASE_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`,
   `CORS_ORIGINS` (frontend origin(s)), `NODE_ENV=production`
+- Health check path: `/api/v1/health`
 - A `render.yaml` blueprint is included in the repo.
 
 **Frontend**
@@ -131,4 +134,9 @@ server-side audit logs, parameterized Prisma queries, secrets via environment.
 
 Redis, queues/workers, object storage, microservices, offline sync, advanced
 RBAC, payroll/HR, full double-entry accounting/GL, bank reconciliation.
+
+Stock can be received without a purchase document: "Receive stock" records a
+`PURCHASE` movement against a product and warehouse. Suppliers, purchase orders
+and accounts payable are not modelled.
+
 See `Basic_ERP_Implementation_Plan_Optimized.md` for the full plan.
