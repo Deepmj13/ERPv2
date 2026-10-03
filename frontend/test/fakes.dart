@@ -8,19 +8,60 @@ class RecordedPost {
   final Object? body;
 }
 
+/// In-memory [AuthStorage] so auth flows can be exercised without the
+/// flutter_secure_storage platform channel.
+class FakeAuthStorage extends AuthStorage {
+  FakeAuthStorage({this.access, this.refresh})
+    : super(const FlutterSecureStorage());
+
+  String? access;
+  String? refresh;
+
+  @override
+  Future<String?> readAccessToken() async => access;
+
+  @override
+  Future<String?> readRefreshToken() async => refresh;
+
+  @override
+  Future<void> saveTokens(String access, String refresh) async {
+    this.access = access;
+    this.refresh = refresh;
+  }
+
+  @override
+  Future<void> clear() async {
+    access = null;
+    refresh = null;
+  }
+}
+
 class FakeApiClient extends ApiClient {
-  FakeApiClient({Map<String, dynamic>? responses, this.failWrites = false})
-    : responses = responses ?? const {},
-      super(
-        baseUrl: 'http://localhost:3000/api/v1',
-        storage: const AuthStorage(FlutterSecureStorage()),
-      );
+  FakeApiClient({
+    Map<String, dynamic>? responses,
+    this.failWrites = false,
+    Map<String, Object>? errors,
+    this.storageOverride,
+  }) : responses = responses ?? <String, dynamic>{},
+       errors = errors ?? <String, Object>{},
+       super(
+         baseUrl: 'http://localhost:3000/api/v1',
+         storage: storageOverride ?? const AuthStorage(FlutterSecureStorage()),
+       );
 
   final Map<String, dynamic> responses;
+
+  /// Thrown instead of returning a response, keyed by path.
+  final Map<String, Object> errors;
   final bool failWrites;
   final List<RecordedPost> posts = [];
+  final AuthStorage? storageOverride;
 
-  dynamic _respond(String path) => responses[path] ?? _emptyPage();
+  dynamic _respond(String path) {
+    final error = errors[path];
+    if (error != null) throw error;
+    return responses[path] ?? _emptyPage();
+  }
 
   @override
   Future<dynamic> get(String path, {Map<String, dynamic>? query}) async =>

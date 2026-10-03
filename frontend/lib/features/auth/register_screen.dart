@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/network/api_config.dart';
+import '../../shared/widgets/common.dart';
 import 'auth_controller.dart';
+import 'auth_error_banner.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -28,7 +31,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!(_formKey.currentState?.validate() ?? false)) return;
     try {
       await ref
           .read(authControllerProvider.notifier)
@@ -39,16 +42,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             email: _email.text.trim(),
             password: _password.text,
           );
-      if (mounted) context.go('/');
-    } on Exception catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('$e'.replaceFirst('Exception: ', '')),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+      if (!mounted) return;
+      showMessage(context, 'Account created');
+      context.go('/');
+    } on Object catch (e) {
+      if (!mounted) return;
+      final text = '$e';
+      showMessage(
+        context,
+        text.isEmpty ? 'Registration failed' : text,
+        error: true,
+      );
     }
   }
 
@@ -68,6 +72,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  AuthErrorBanner(
+                    message: auth.errorMessage,
+                    isServerUnreachable: auth.isServerUnreachable,
+                    baseUrl: ApiConfig.baseUrl,
+                    onRetry: auth.isLoading ? null : _submit,
+                    onDismiss: () =>
+                        ref.read(authControllerProvider.notifier).clearError(),
+                  ),
+                  if (auth.errorMessage != null) const SizedBox(height: 16),
                   TextFormField(
                     controller: _orgName,
                     decoration: const InputDecoration(
@@ -139,6 +152,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ),
                   const SizedBox(height: 24),
                   FilledButton(
+                    key: const Key('register-submit'),
                     onPressed: auth.isLoading ? null : _submit,
                     child: auth.isLoading
                         ? const SizedBox(

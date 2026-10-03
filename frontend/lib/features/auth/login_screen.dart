@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/network/api_config.dart';
+import '../../shared/widgets/common.dart';
 import 'auth_controller.dart';
+import 'auth_error_banner.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -24,22 +27,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!(_formKey.currentState?.validate() ?? false)) return;
     try {
       await ref
           .read(authControllerProvider.notifier)
           .login(_email.text.trim(), _password.text);
-      if (mounted) context.go('/');
-    } on Exception catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('$e'.replaceFirst('Exception: ', '')),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+      if (!mounted) return;
+      showMessage(context, 'Signed in successfully');
+      context.go('/');
+    } on Object catch (e) {
+      if (!mounted) return;
+      showMessage(context, _messageOf(e), error: true);
     }
+  }
+
+  static String _messageOf(Object error) {
+    final text = '$error';
+    return text.isEmpty ? 'Sign in failed' : text;
   }
 
   @override
@@ -78,21 +82,40 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 24),
+                      AuthErrorBanner(
+                        message: auth.errorMessage,
+                        isServerUnreachable: auth.isServerUnreachable,
+                        baseUrl: ApiConfig.baseUrl,
+                        onRetry: auth.isLoading ? null : _submit,
+                        onDismiss: () => ref
+                            .read(authControllerProvider.notifier)
+                            .clearError(),
+                      ),
+                      if (auth.errorMessage != null) const SizedBox(height: 16),
                       TextFormField(
                         controller: _email,
                         keyboardType: TextInputType.emailAddress,
+                        autofillHints: const [AutofillHints.email],
                         decoration: const InputDecoration(
                           labelText: 'Email',
                           prefixIcon: Icon(Icons.mail_outline),
                         ),
-                        validator: (v) => v == null || v.trim().isEmpty
-                            ? 'Enter email'
-                            : null,
+                        validator: (v) {
+                          final value = v?.trim() ?? '';
+                          if (value.isEmpty) return 'Enter email';
+                          if (!RegExp(
+                            r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                          ).hasMatch(value)) {
+                            return 'Enter a valid email address';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _password,
                         obscureText: _obscure,
+                        autofillHints: const [AutofillHints.password],
                         decoration: InputDecoration(
                           labelText: 'Password',
                           prefixIcon: const Icon(Icons.lock_outline),
@@ -112,6 +135,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       const SizedBox(height: 24),
                       FilledButton(
+                        key: const Key('login-submit'),
                         onPressed: auth.isLoading ? null : _submit,
                         child: auth.isLoading
                             ? const SizedBox(
@@ -125,7 +149,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       const SizedBox(height: 16),
                       TextButton(
-                        onPressed: () => context.push('/register'),
+                        onPressed: auth.isLoading
+                            ? null
+                            : () => context.push('/register'),
                         child: const Text('Create a new organization'),
                       ),
                     ],

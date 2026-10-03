@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/auth_controller.dart';
@@ -18,10 +19,17 @@ import '../../features/users/users_screen.dart';
 import '../../shared/widgets/app_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
-  ref.watch(authControllerProvider);
+  final authRefresh = ValueNotifier<AuthState>(
+    ref.read(authControllerProvider),
+  );
+  ref.listen<AuthState>(authControllerProvider, (_, next) {
+    authRefresh.value = next;
+  });
+  ref.onDispose(authRefresh.dispose);
 
   return GoRouter(
     initialLocation: '/',
+    refreshListenable: authRefresh,
     redirect: (context, state) {
       final auth = ref.read(authControllerProvider);
       final isAuthRoute =

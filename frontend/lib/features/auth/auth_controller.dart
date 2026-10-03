@@ -8,12 +8,17 @@ class AuthState {
     this.isLoading = false,
     this.initialized = false,
     this.errorMessage,
+    this.isServerUnreachable = false,
   });
 
   final Map<String, dynamic>? user;
   final bool isLoading;
   final bool initialized;
   final String? errorMessage;
+
+  /// Set when the last failure was a transport failure (server down, wrong
+  /// host, timeout) rather than a rejected request. Drives the retry UI.
+  final bool isServerUnreachable;
 
   bool get isAuthenticated => user != null;
 
@@ -22,12 +27,17 @@ class AuthState {
     bool? isLoading,
     bool? initialized,
     String? errorMessage,
+    bool? isServerUnreachable,
     bool clearUser = false,
+    bool clearError = false,
   }) => AuthState(
     user: clearUser ? null : user ?? this.user,
     isLoading: isLoading ?? this.isLoading,
     initialized: initialized ?? this.initialized,
-    errorMessage: errorMessage ?? this.errorMessage,
+    errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
+    isServerUnreachable: clearError
+        ? false
+        : isServerUnreachable ?? this.isServerUnreachable,
   );
 }
 
@@ -41,45 +51,46 @@ class AuthController extends Notifier<AuthState> {
     return const AuthState(isLoading: true);
   }
 
+  void clearError() {
+    if (state.errorMessage == null && !state.isServerUnreachable) return;
+    state = state.copyWith(clearError: true);
+  }
+
   Future<void> _bootstrap() async {
-    final refreshToken = await _storage.readRefreshToken();
-    if (refreshToken == null) {
-      state = const AuthState(initialized: true);
-      return;
-    }
     try {
+      final refreshToken = await _storage.readRefreshToken();
+      if (refreshToken == null) {
+        state = const AuthState(initialized: true);
+        return;
+      }
       final res = await _api.post(
         '/auth/refresh',
         body: {'refreshToken': refreshToken},
       );
-      state = AuthState(
-        user: res == null ? null : (res['user'] as Map<String, dynamic>?),
-        initialized: true,
-      );
+      state = AuthState(user: _readUser(res), initialized: true);
     } catch (_) {
-      await _storage.clear();
+      try {
+        await _storage.clear();
+      } catch (_) {}
       state = const AuthState(initialized: true);
     }
   }
 
   Future<void> login(String email, String password) async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final res = await _api.post(
         '/auth/login',
         body: {'email': email, 'password': password},
       );
-      await _storage.saveTokens(
-        res['accessToken'] as String,
-        res['refreshToken'] as String,
-      );
-      state = AuthState(
-        user: res['user'] as Map<String, dynamic>?,
-        initialized: true,
-      );
-    } on ApiException catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: e.message);
+      final tokens = _readTokens(res);
+      await _storage.saveTokens(tokens.$1, tokens.$2);
+      state = AuthState(user: _readUser(res), initialized: true);
+    } catch (e) {
+      _fail(e);
       rethrow;
+    } finally {
+      if (state.isLoading) state = state.copyWith(isLoading: false);
     }
   }
 
@@ -90,7 +101,7 @@ class AuthController extends Notifier<AuthState> {
     required String email,
     required String password,
   }) async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final res = await _api.post(
         '/auth/register',
@@ -102,17 +113,14 @@ class AuthController extends Notifier<AuthState> {
           'password': password,
         },
       );
-      await _storage.saveTokens(
-        res['accessToken'] as String,
-        res['refreshToken'] as String,
-      );
-      state = AuthState(
-        user: res['user'] as Map<String, dynamic>?,
-        initialized: true,
-      );
-    } on ApiException catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: e.message);
+      final tokens = _readTokens(res);
+      await _storage.saveTokens(tokens.$1, tokens.$2);
+      state = AuthState(user: _readUser(res), initialized: true);
+    } catch (e) {
+      _fail(e);
       rethrow;
+    } finally {
+      if (state.isLoading) state = state.copyWith(isLoading: false);
     }
   }
 
@@ -135,6 +143,41 @@ class AuthController extends Notifier<AuthState> {
     }
     await _storage.clear();
     state = const AuthState(initialized: true);
+  }
+
+  void _fail(Object error) {
+    final api = error is ApiException ? error : null;
+    state = state.copyWith(
+      isLoading: false,
+      errorMessage: _messageOf(error),
+      isServerUnreachable: api?.isConnectionError ?? false,
+    );
+  }
+
+  static String _messageOf(Object error) {
+    if (error is ApiException) return error.message;
+    final text = error.toString();
+    return text.isEmpty ? 'Something went wrong' : text;
+  }
+
+  static Map<String, dynamic>? _readUser(dynamic res) {
+    if (res is! Map<String, dynamic>) return null;
+    final user = res['user'];
+    return user is Map<String, dynamic> ? user : null;
+  }
+
+  /// Returns (accessToken, refreshToken), throwing a readable ApiException
+  /// instead of a TypeError when the server sends an unexpected body.
+  static (String, String) _readTokens(dynamic res) {
+    if (res is! Map<String, dynamic>) {
+      throw const ApiException(message: 'Unexpected response from the server');
+    }
+    final access = res['accessToken'];
+    final refresh = res['refreshToken'];
+    if (access is! String || refresh is! String) {
+      throw const ApiException(message: 'Unexpected response from the server');
+    }
+    return (access, refresh);
   }
 }
 
